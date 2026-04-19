@@ -40,15 +40,14 @@
 
         #canvas-wrapper {
             position: relative;
-            width: 900px; /* 180px * 5 колони */
-            height: 600px; /* 200px * 3 реда */
-            background-color: white;
-            border: 15px solid white;
+            width: 1000px;
+            height: 600px;
+            background-color: #fff;
+            border: 10px solid white;
             border-radius: 12px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
             background-image: url('school_building.jpg');
-            background-size: contain; 
-            background-repeat: no-repeat;
+            background-size: cover;
             background-position: center;
         }
 
@@ -58,13 +57,12 @@
             grid-template-rows: repeat(3, 1fr);
             width: 100%;
             height: 100%;
+            background-color: white;
         }
 
         .tile {
             background-image: url('stem_logo.jpg');
-            background-size: 900px 600px; /* Фиксиран размер за точно рязане */
-            background-color: white;
-            border: 0.5px solid rgba(255,255,255,0.2);
+            background-size: 1000px 600px;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -74,11 +72,27 @@
             color: white;
             -webkit-text-stroke: 2px #000;
             text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            
+            /* Ето тук са "замазващите" рамки */
+            border: 1px solid rgba(0,0,0,0.1); /* Тънка тъмна линия между тях */
+            box-shadow: inset 0 0 10px rgba(255,255,255,0.5); /* Вътрешно сияние за обем */
             box-sizing: border-box;
+            transition: transform 0.2s, filter 0.2s;
         }
 
-        .tile.hidden { opacity: 0; pointer-events: none; transition: opacity 0.6s; }
+        .tile:hover {
+            filter: brightness(1.1);
+            z-index: 10;
+        }
 
+        .tile.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s, transform 0.6s;
+            transform: scale(1.1);
+        }
+
+        /* Modal & UI */
         #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99; }
         #question-box { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 40px; border-radius: 25px; border: 6px solid var(--bright-blue); width: 600px; z-index: 100; text-align: center; }
         .question-text { font-size: 2rem; margin-bottom: 30px; color: #2c3e50; line-height: 1.3; }
@@ -136,8 +150,8 @@
             tile.className = 'tile';
             tile.innerText = i + 1;
             
-            // 900 / 5 = 180px широчина; 600 / 3 = 200px височина
-            const x = (i % 5) * 180;
+            // Използваме твърди пиксели за background-position, за да няма плаваща запетая
+            const x = (i % 5) * 200;
             const y = Math.floor(i / 5) * 200;
             tile.style.backgroundPosition = `-${x}px -${y}px`;
             
