@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>STEM Център - ОУ Св. Патриарх Евтимий</title>
+    <title>STEM Център - Пъзел Игра</title>
     <style>
         :root {
             --bright-red: #ff4d4d;
@@ -74,14 +74,16 @@
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
             box-sizing: border-box;
             border: 0.1px solid rgba(255,255,255,0.1);
+            transition: transform 0.2s;
         }
 
+        .tile:hover { transform: scale(0.98); filter: brightness(1.1); }
         .tile.hidden { opacity: 0; pointer-events: none; transition: opacity 0.5s ease-out; }
 
-        /* Модален прозорец за въпроси */
+        /* Модален прозорец */
         #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 99; }
         #question-box { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 40px; border-radius: 20px; border: 6px solid var(--bright-blue); width: 550px; z-index: 100; text-align: center; }
-        .question-text { font-size: 1.8rem; margin-bottom: 25px; color: #2c3e50; line-height: 1.3; }
+        .question-text { font-size: 1.8rem; margin-bottom: 25px; color: #2c3e50; line-height: 1.3; font-weight: bold; }
         .opt-btn { display: block; width: 100%; padding: 15px; margin-bottom: 12px; font-size: 1.4rem; border: none; border-radius: 10px; cursor: pointer; color: white; font-weight: bold; transition: 0.2s; }
         .btn-0 { background: var(--bright-red); }
         .btn-1 { background: var(--bright-green); }
@@ -109,6 +111,7 @@
     </div>
 
 <script>
+    // ПЪЛЕН СПИСЪК С ВЪПРОСИ
     const questions = [
         { q: "Кой елемент е най-разпространен във Вселената?", o: ["Кислород", "Водород", "Желязо"], a: 1 },
         { q: "Какъв е обемът на човешкото тяло, съставен от вода?", o: ["20%", "60%", "95%"], a: 1 },
@@ -138,7 +141,90 @@
             tile.className = 'tile';
             tile.innerText = i + 1;
             
+            // Фиксирана математика за 1000x600 лого
             const col = i % 5;
             const row = Math.floor(i / 5);
             const posX = col * 200;
             const posY = row * 200;
+
+            tile.style.backgroundPosition = `-${posX}px -${posY}px`;
+            
+            tile.onclick = () => { 
+                activeTile = tile; 
+                showQ(i); 
+            };
+            grid.appendChild(tile);
+        }
+    }
+
+    function showQ(idx) {
+        const q = questions[idx];
+        document.getElementById('q-text').innerText = q.q;
+        const list = document.getElementById('opt-list');
+        list.innerHTML = '';
+        
+        q.o.forEach((opt, i) => {
+            const btn = document.createElement('button');
+            btn.className = `opt-btn btn-${i}`;
+            btn.innerText = opt;
+            btn.onclick = () => {
+                if (i === q.a) {
+                    activeTile.classList.add('hidden');
+                    solved++;
+                    document.getElementById('status-bar').innerText = `ОТКЛЮЧЕНИ МОДУЛИ: ${solved} / 15`;
+                    if (solved === 15) celebrate();
+                    hideModal();
+                } else { 
+                    alert("Помисли, не бързай!"); 
+                }
+            };
+            list.appendChild(btn);
+        });
+        
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('question-box').style.display = 'block';
+    }
+
+    function hideModal() {
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('question-box').style.display = 'none';
+    }
+
+    function celebrate() {
+        const status = document.getElementById('status-bar');
+        status.innerText = "✨ Добре дошли в нашия STEM център! ✨";
+        status.style.fontSize = "2.2rem";
+        status.style.color = "#2ecc71";
+        status.style.width = "1000px";
+        status.style.textAlign = "center";
+        
+        for (let i = 0; i < 150; i++) { 
+            createParticle(); 
+        }
+    }
+
+    function createParticle() {
+        const p = document.createElement('div');
+        p.style.position = 'fixed';
+        p.style.width = '10px'; 
+        p.style.height = '10px';
+        p.style.backgroundColor = ['#ff4d4d', '#2ecc71', '#3498db', '#f1c40f'][Math.floor(Math.random()*4)];
+        p.style.left = Math.random() * 100 + 'vw'; 
+        p.style.top = '-10px';
+        p.style.borderRadius = '50%'; 
+        p.style.zIndex = '200';
+        document.body.appendChild(p);
+        
+        p.animate([
+            { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
+            { transform: `translateY(110vh) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+        ], { 
+            duration: Math.random() * 3000 + 2000,
+            easing: 'cubic-bezier(0, .9, .57, 1)'
+        }).onfinish = () => p.remove();
+    }
+
+    window.onload = init;
+</script>
+</body>
+</html>
