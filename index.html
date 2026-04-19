@@ -6,16 +6,16 @@
     <title>Вертикала на познанието</title>
     <style>
         :root {
-            --bright-red: #ff0033;
+            --bright-red: #ff4d4d;
             --bright-green: #2ecc71;
             --bright-blue: #3498db;
             --bright-yellow: #f1c40f;
-            --bg-light: #f0f2f5; /* По-светъл фон */
+            --bg-light: #f0f2f5; /* Изсветлен фон */
         }
 
         body {
             background-color: var(--bg-light);
-            color: #333;
+            color: #2c3e50;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             display: flex;
@@ -24,6 +24,7 @@
             justify-content: center;
             height: 100vh;
             overflow: hidden;
+            transition: background-color 0.4s ease;
         }
 
         h1 {
@@ -33,6 +34,7 @@
             font-weight: 900;
             color: #2c3e50;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: 2px;
         }
 
         #status-bar {
@@ -40,6 +42,7 @@
             color: var(--bright-blue);
             margin-bottom: 20px;
             font-weight: bold;
+            transition: all 0.5s;
         }
 
         #canvas-wrapper {
@@ -47,10 +50,10 @@
             width: 1000px;
             height: 600px;
             background-color: white; /* Цвят на рамката */
-            border: 15px solid white; /* Дебела бяла рамка */
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            /* Снимката отдолу няма да се разпъва */
+            border: 15px solid white; /* Бяла рамка */
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            /* Настройка на снимката отдолу - без разпъване */
             background-image: url('school_building.jpg');
             background-size: contain; 
             background-repeat: no-repeat;
@@ -63,171 +66,36 @@
             grid-template-rows: repeat(3, 1fr);
             width: 100%;
             height: 100%;
-            background-color: transparent;
         }
 
         .tile {
             background-image: url('stem_logo.jpg');
             background-size: 1000px 600px;
-            border: 1px solid rgba(255,255,255,0.4);
+            border: 1px solid rgba(255,255,255,0.3);
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3.5rem;
+            font-size: 4rem;
             font-weight: 900;
             color: white;
             -webkit-text-stroke: 2px #000;
-            text-shadow: 3px 3px 5px rgba(0,0,0,0.5);
-            transition: all 0.4s ease;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .tile:hover { transform: scale(0.98); filter: brightness(1.2); }
-        .tile.hidden { opacity: 0; pointer-events: none; }
+        .tile:hover {
+            transform: scale(0.97);
+            filter: brightness(1.2);
+        }
+
+        .tile.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(1.1);
+        }
 
         #overlay {
-            display: none; position: fixed; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 99;
-        }
-
-        #question-box {
-            display: none; position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); background: white;
-            padding: 40px; border-radius: 20px; border: 5px solid var(--bright-blue);
-            width: 600px; z-index: 100; text-align: center;
-        }
-
-        .question-text { font-size: 2rem; margin-bottom: 30px; color: #2c3e50; }
-
-        .opt-btn {
-            display: block; width: 100%; padding: 15px; margin-bottom: 10px;
-            font-size: 1.4rem; border: none; border-radius: 10px;
-            cursor: pointer; font-weight: bold; color: white; transition: 0.2s;
-        }
-
-        .btn-0 { background: var(--bright-red); }
-        .btn-1 { background: var(--bright-green); }
-        .btn-2 { background: var(--bright-blue); }
-        .opt-btn:hover { opacity: 0.9; transform: translateY(-2px); }
-
-        @keyframes success-flash {
-            0% { background-color: var(--bg-light); }
-            50% { background-color: #d4edda; }
-            100% { background-color: var(--bg-light); }
-        }
-        .flash { animation: success-flash 0.6s; }
-    </style>
-</head>
-<body>
-
-    <h1>ВЕРТИКАЛА НА ПОЗНАНИЕТО</h1>
-    <div id="status-bar">ОТКЛЮЧЕНИ МОДУЛИ: 0 / 15</div>
-
-    <div id="canvas-wrapper">
-        <div id="grid"></div>
-    </div>
-
-    <div id="overlay"></div>
-    <div id="question-box">
-        <div class="question-text" id="q-text">Въпрос?</div>
-        <div id="opt-list"></div>
-    </div>
-
-<script>
-    const questions = [
-        { q: "Кой елемент е най-разпространен във Вселената?", o: ["Кислород", "Водород", "Желязо"], a: 1 },
-        { q: "Какъв е обемът на човешкото тяло, съставен от вода?", o: ["20%", "60%", "95%"], a: 1 },
-        { q: "Какво означава съкращението AI?", o: ["Алгоритмична информация", "Изкуствен интелект", "Автоматичен интерфейс"], a: 1 },
-        { q: "Какво прави един 3D принтер?", o: ["Принтира снимки", "Създава обекти слой по слой", "Сканира документи"], a: 1 },
-        { q: "Коя е най-здравата геометрична форма за мостове?", o: ["Квадрат", "Триъгълник", "Кръг"], a: 1 },
-        { q: "Кой е първият изкуствен спътник на Земята?", o: ["Аполо-11", "Спутник-1", "Хъбъл"], a: 1 },
-        { q: "Какво е прототип?", o: ["Крайният продукт", "Първият тестов модел", "Ръководство"], a: 1 },
-        { q: "Какво е ДНК?", o: ["Генетична информация", "Вид микроскоп", "Вид пластмаса"], a: 0 },
-        { q: "Какво означава съкращението IoT?", o: ["Интернет на нещата", "Онлайн транспорт", "Игри за таблет"], a: 0 },
-        { q: "Коя е най-малката единица компютърни данни?", o: ["Байт", "Бит", "Килобайт"], a: 1 },
-        { q: "Какво е числото Пи (π)?", o: ["Рационално 3,14", "Целочислена константа", "Отношение обиколка към диаметър"], a: 2 },
-        { q: "Първото по приоритет математическо действие е...?", o: ["Умножение", "Събиране", "Степенуване и скоби"], a: 2 },
-        { q: "Какъв е сборът от ъглите в триъгълник?", o: ["90°", "180°", "360°"], a: 1 },
-        { q: "Основната съставка на пясъка и стъклото е...?", o: ["Натриев хлорид", "Силициев диоксид", "Калциев карбонат"], a: 1 },
-        { q: "Колко време пътува светлината от Слънцето до Земята?", o: ["8 секунди", "8 минути", "8 часа"], a: 1 }
-    ];
-
-    let solved = 0;
-    let activeTile = null;
-
-    function init() {
-        const grid = document.getElementById('grid');
-        for (let i = 0; i < 15; i++) {
-            const tile = document.createElement('div');
-            tile.className = 'tile';
-            tile.innerText = i + 1;
-            const x = (i % 5) * 200;
-            const y = Math.floor(i / 5) * 200;
-            tile.style.backgroundPosition = `-${x}px -${y}px`;
-            tile.onclick = () => { activeTile = tile; showQ(i); };
-            grid.appendChild(tile);
-        }
-    }
-
-    function showQ(idx) {
-        const q = questions[idx];
-        document.getElementById('q-text').innerText = q.q;
-        const list = document.getElementById('opt-list');
-        list.innerHTML = '';
-        q.o.forEach((opt, i) => {
-            const btn = document.createElement('button');
-            btn.className = `opt-btn btn-${i}`;
-            btn.innerText = opt;
-            btn.onclick = () => {
-                if (i === q.a) {
-                    document.body.classList.add('flash');
-                    setTimeout(() => document.body.classList.remove('flash'), 600);
-                    activeTile.classList.add('hidden');
-                    solved++;
-                    document.getElementById('status-bar').innerText = `ОТКЛЮЧЕНИ МОДУЛИ: ${solved} / 15`;
-                    if (solved === 15) celebrate();
-                    hideModal();
-                } else { alert("Помисли, не бързай!"); }
-            };
-            list.appendChild(btn);
-        });
-        document.getElementById('overlay').style.display = 'block';
-        document.getElementById('question-box').style.display = 'block';
-    }
-
-    function hideModal() {
-        document.getElementById('overlay').style.display = 'none';
-        document.getElementById('question-box').style.display = 'none';
-    }
-
-    function celebrate() {
-        const status = document.getElementById('status-bar');
-        status.innerText = "✨ Добре дошли! ✨";
-        status.style.fontSize = "3rem";
-        status.style.color = "#2ecc71";
-        for (let i = 0; i < 150; i++) { createParticle(); }
-    }
-
-    function createParticle() {
-        const p = document.createElement('div');
-        const colors = ['#ff0033', '#2ecc71', '#3498db', '#f1c40f', '#9b59b6'];
-        p.style.position = 'fixed';
-        p.style.width = '12px';
-        p.style.height = '12px';
-        p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        p.style.left = Math.random() * 100 + 'vw';
-        p.style.top = '-20px';
-        p.style.borderRadius = '2px';
-        p.style.zIndex = '200';
-        document.body.appendChild(p);
-
-        p.animate([
-            { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
-            { transform: `translateY(100vh) translateX(${Math.random() * 200 - 100}px) rotate(720deg)`, opacity: 0 }
-        ], { duration: Math.random() * 3000 + 2000 }).onfinish = () => p.remove();
-    }
-
-    init();
-</script>
-</body>
-</html>
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 1
